@@ -11,10 +11,10 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import jakarta.validation.Valid;
@@ -35,6 +35,7 @@ public class BasicChannelService implements ChannelService {
 
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
+  private final ReadStatusRepository readStatusRepository;
   private final ChannelMapper channelMapper;
   private final UserMapper userMapper;
 
@@ -54,18 +55,14 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   public ChannelDto create(@Valid PrivateChannelCreateRequest request) {
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
+    channelRepository.save(channel);
     log.debug("채널 entity 생성: {}", channel);
 
-    request.participantIds().stream()
-        .map(userId -> userRepository.findById(userId)
-            .orElseThrow(() -> {
-              log.error("사용자 조회 실패 - userId={}", userId);
-              return new UserNotFoundException(userId);
-            }))
+    List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
         .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
-        .forEach(channel.getReadStatuses()::add);
+        .toList();
+    readStatusRepository.saveAll(readStatuses);
 
-    channelRepository.save(channel);
     return channelMapper.toDto(channel);
   }
 
@@ -81,10 +78,14 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public List<ChannelDto> findAllByUserId(@NotNull UUID userId) {
-    List<Channel> channels = channelRepository
-        .findAllAccessible(ChannelType.PUBLIC, userId);
-    return channels.stream()
-        .map(this::toDto)
+    List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
+        .map(ReadStatus::getChannel)
+        .map(Channel::getId)
+        .toList();
+
+    return channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, mySubscribedChannelIds)
+        .stream()
+        .map(channelMapper::toDto)
         .toList();
   }
 

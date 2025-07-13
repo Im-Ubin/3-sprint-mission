@@ -80,21 +80,4 @@ public class ChannelRepositoryTest {
         // then
         assertThat(optionalChannel).isEmpty();
     }
-
-    @Test
-    @DisplayName("사용자가 속한 공개/비공개 채널 반환 성공")
-    void findAllAccessible() {
-        // when
-        List<Channel> result = channelRepository.findAllAccessible(ChannelType.PUBLIC, userId);
-
-        // then
-        assertThat(result)
-            .hasSize(2)
-            .extracting(Channel::getId)
-            .containsExactlyInAnyOrder(
-                publicChannel.getId(),
-                privateChannelAccessible.getId()
-            );
-    }
-
 }
