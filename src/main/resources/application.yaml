@@ -15,10 +15,11 @@ spring:
     open-in-view: false
     properties:
       hibernate:
+        ddl-auto: validate
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
-        # dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 logging:
   level:

@@ -5,9 +5,12 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -19,6 +22,8 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
+@Component
+@Profile("prod")
 public class S3BinaryContentStorage implements BinaryContentStorage {
     private final S3Client s3Client;
     private final String accessKey;
@@ -32,7 +37,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         this.secretKey = aws.secretKey();
         this.region = aws.region();
         this.bucket = aws.bucket();
-        this.expiration = aws.presignedUrlExpiration();
+        this.expiration = Duration.ofSeconds(aws.presignedUrlExpiration());
         this.s3Client = getS3Client();
     }
 
@@ -59,10 +64,12 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
     @Override
     public ResponseEntity<Void> download(BinaryContentDto dto) {
-        String presignedUrl = generatePresignedUrl(dto.id().toString() , dto.contentType());
+        String presignedUrl = generatePresignedUrl(
+            dto.id().toString() , dto.contentType(), dto.fileName()
+        );
 
         return ResponseEntity
-            .status(HttpStatus.FOUND) // 302
+            .status(HttpStatus.SEE_OTHER) // 302
             .header(HttpHeaders.LOCATION, presignedUrl)
             .build();
     }
@@ -75,7 +82,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
             .build();
     }
 
-    public String generatePresignedUrl(String key, String contentType) {
+    public String generatePresignedUrl(String key, String contentType, String filename) {
         S3Presigner presigner = S3Presigner.builder()
             .region(Region.of(region))
             .credentialsProvider(StaticCredentialsProvider.create(
@@ -86,6 +93,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
             .bucket(bucket)
             .key(key)
             .responseContentType(contentType)
+            .responseContentDisposition("attachment; filename=\"" + filename + "\"")
             .build();
 
         GetObjectPresignRequest presignReq = GetObjectPresignRequest.builder()

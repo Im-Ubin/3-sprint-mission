@@ -15,6 +15,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@Profile("dev")
 @ConditionalOnProperty(
     prefix = "discodeit.storage",
     name = "type",
