@@ -137,8 +137,8 @@ public class BasicUserService implements UserService {
         .orElse(user.getProfile());
 
     user.update(
-        userUpdateRequest.newUsername(),
-        userUpdateRequest.newEmail(),
+        newUsername,
+        newEmail,
         userUpdateRequest.newPassword(),
         newProfile
     );
