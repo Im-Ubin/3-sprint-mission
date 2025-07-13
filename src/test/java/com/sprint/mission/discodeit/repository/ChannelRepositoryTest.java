@@ -7,7 +7,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,15 +30,12 @@ public class ChannelRepositoryTest {
     @Autowired private TestEntityManager em;
 
     private User user;
-    private UUID userId;
-
     private Channel publicChannel;
     private Channel privateChannelAccessible;
 
     @BeforeEach
     void setUp() {
         user = userRepository.save(new User("tom", "tom@test.com", "pw123456", null));
-        userId = user.getId();
 
         publicChannel = new Channel(ChannelType.PUBLIC, "public", "public channel");
         channelRepository.save(publicChannel);
