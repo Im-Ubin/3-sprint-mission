@@ -3,11 +3,13 @@ FROM amazoncorretto:17 AS builder
 
 WORKDIR /app
 
-COPY . .
-
+COPY build.gradle settings.gradle gradlew ./
+COPY gradle gradle
 RUN chmod +x ./gradlew \
-    && ./gradlew clean build
+    && ./gradlew --no-daemon dependencies
 
+COPY src src
+RUN ./gradlew --no-daemon bootJar -x test
 
 # 실행 환경
 FROM amazoncorretto:17
