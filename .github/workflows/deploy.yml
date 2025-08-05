@@ -69,7 +69,6 @@ jobs:
                 , cpu: .taskDefinition.cpu
                 , memory: .taskDefinition.memory
                 , executionRoleArn: .taskDefinition.executionRoleArn
-                , taskRoleArn: .taskDefinition.taskRoleArn
                 }' td.json \
           > new-td.json
 
