@@ -90,15 +90,3 @@ tasks.check {
 tasks.named('test') {
     useJUnitPlatform()
 }
-
-//Admin 관련 설정
-//
-//ext {
-//    springBootAdminVersion = "3.4.7"
-//}
-//
-//dependencyManagement {
-//    imports {
-//        mavenBom "de.codecentric:spring-boot-admin-dependencies:$springBootAdminVersion"
-//    }
-//}
