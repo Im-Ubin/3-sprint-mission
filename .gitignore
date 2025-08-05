@@ -8,7 +8,7 @@ build/
 .env
 application-*.yaml
 !application-dev.yml
-!application-prod.ym
+!application-prod.yml
 
 ### AWS ###
 *.pem
