@@ -20,8 +20,7 @@ import org.hibernate.type.SqlTypes;
 public class Channel extends BaseUpdatableEntity {
 
   @Enumerated(EnumType.STRING)
-  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-  @Column(name = "type", columnDefinition = "channel_type", nullable = false)
+  @Column(name = "type", nullable = false)
   private ChannelType type;
 
   @Column(name = "name", length = 100)

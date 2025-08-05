@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.UUID;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,7 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
 @Component
-@Profile("prod")
+@ConditionalOnProperty(prefix = "discodeit.storage", name = "type", havingValue = "s3")
 public class S3BinaryContentStorage implements BinaryContentStorage {
     private final S3Client s3Client;
     private final String accessKey;
