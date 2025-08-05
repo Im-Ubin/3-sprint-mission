@@ -29,6 +29,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -106,7 +107,7 @@ public class ChannelServiceTest {
     @DisplayName("비공개 채널 생성 성공")
     void createPrivateChannel() {
         // given
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(userRepository.findAllById(List.of(userId))).willReturn(List.of(user));
 
         Channel privateChannel = new Channel(ChannelType.PRIVATE, "privateChannel", "This is private channel.");
         ChannelDto privateChannelDto = new ChannelDto(
@@ -126,25 +127,10 @@ public class ChannelServiceTest {
         ChannelDto result = channelService.create(privateChannelCreateRequest);
 
         // then
-        then(userRepository).should().findById(userId);
+        then(userRepository).should().findAllById(List.of(userId));
         then(channelRepository).should().save(any(Channel.class));
         then(channelMapper).should().toDto(any(Channel.class));
         assertThat(result).isSameAs(privateChannelDto);
-    }
-
-    @Test
-    @DisplayName("비공개 채널 생성 중 UserNotFoundException 예외 발생")
-    void createPrivateChannelWithUserNotFound() {
-        // given
-        PrivateChannelCreateRequest privateChannelCreateRequest = new PrivateChannelCreateRequest(List.of(userId));
-        given(userRepository.findById(userId)).willReturn(Optional.empty());
-
-        // when & then
-        assertThatThrownBy(() -> channelService.create(privateChannelCreateRequest))
-            .isInstanceOf(UserNotFoundException.class);
-
-        then(channelRepository).should(never()).save(any());
-        then(channelMapper).should(never()).toDto(any());
     }
 
     @Test
