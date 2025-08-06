@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -41,6 +42,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentMapper binaryContentMapper;
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -62,17 +64,19 @@ public class BasicUserService implements UserService {
                 String contentType = profileRequest.contentType();
                 byte[] bytes = profileRequest.bytes();
 
-              BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
-              log.debug("binaryContent entity 생성: {}", binaryContent);
-              binaryContentRepository.save(binaryContent);
+                BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
+                log.debug("binaryContent entity 생성: {}", binaryContent);
+                binaryContentRepository.save(binaryContent);
 
-              binaryContentStorage.put(binaryContent.getId(), bytes);
-              return binaryContent;
+                binaryContentStorage.put(binaryContent.getId(), bytes);
+                return binaryContent;
             })
         .orElse(null);
-        String password = userCreateRequest.password();
 
-        User user = new User(username, email, password, nullableProfile);
+        String encodedPassword = passwordEncoder.encode(userCreateRequest.password());
+        log.debug("암호화된 비밀번호: {}",  encodedPassword);
+
+        User user = new User(username, email, encodedPassword, nullableProfile);
         User createdUser = userRepository.save(user);
         log.debug("사용자 entity 생성: {}",  createdUser);
 
