@@ -1,4 +1,3 @@
--- 테이블
 -- User
 CREATE TABLE IF NOT EXISTS users
 (
@@ -8,7 +7,8 @@ CREATE TABLE IF NOT EXISTS users
     username   varchar(50) UNIQUE       NOT NULL,
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
-    profile_id uuid
+    profile_id uuid,
+    role       varchar(20)              NOT NULL DEFAULT 'USER'
 );
 
 -- BinaryContent
@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS binary_contents
     file_name    varchar(255)             NOT NULL,
     size         bigint                   NOT NULL,
     content_type varchar(100)             NOT NULL
---     ,bytes        bytea        NOT NULL
 );
 
 -- UserStatus
@@ -75,13 +74,15 @@ CREATE TABLE IF NOT EXISTS read_statuses
 );
 
 
--- 제약 조건
 -- User (1) -> BinaryContent (1)
 ALTER TABLE users
     ADD CONSTRAINT fk_user_binary_content
         FOREIGN KEY (profile_id)
             REFERENCES binary_contents (id)
             ON DELETE SET NULL;
+
+ALTER TABLE users
+    ADD role varchar(20) NOT NULL DEFAULT 'USER';
 
 -- UserStatus (1) -> User (1)
 ALTER TABLE user_statuses

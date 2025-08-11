@@ -1,7 +1,3 @@
-CREATE TABLE channel_type_dummy (
-    dummy VARCHAR CHECK (dummy IN ('PUBLIC', 'PRIVATE'))
-);
-
 -- 2. 테이블 생성
 CREATE TABLE binary_contents (
     id UUID PRIMARY KEY,
@@ -19,6 +15,7 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(60) NOT NULL,
     profile_id UUID,
+    role varchar(20) NOT NULL DEFAULT 'USER',
 
     CONSTRAINT fk_users_profile
         FOREIGN KEY (profile_id)
@@ -26,13 +23,18 @@ CREATE TABLE users (
         ON DELETE SET NULL
 );
 
+ALTER TABLE users
+    ADD role varchar(20) NOT NULL DEFAULT 'USER';
+
 CREATE TABLE channels (
     id UUID PRIMARY KEY,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone,
     name VARCHAR(100),
     description VARCHAR(500),
-    type VARCHAR(10) CHECK (type IN ('PUBLIC', 'PRIVATE'))
+    type VARCHAR(10) NOT NULL
+        CONSTRAINT chk_channel_type
+        CHECK (type IN ('PUBLIC', 'PRIVATE'))
 );
 
 CREATE TABLE user_statuses (
