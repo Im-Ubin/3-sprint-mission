@@ -3,14 +3,20 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.auth.AuthService;
 import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
+import com.sprint.mission.discodeit.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController implements AuthApi {
 
     private final AuthService authService;
+    private final UserService userService;
 
     /**
      * CSRF 토큰 발급 API
@@ -51,13 +58,20 @@ public class AuthController implements AuthApi {
     @Override
     @GetMapping("/me")
     public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
-
         if (userDetails == null) {
             log.error("인증된 사용자가 아닙니다. (인증 정보 null)");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
         UserDto userDto = authService.getCurrentUserInfo(userDetails);
+        return ResponseEntity.ok(userDto);
+    }
+
+    @PutMapping("/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserDto> updateUserRole (@Valid @RequestBody RoleUpdateRequest roleUpdateRequest, @AuthenticationPrincipal UserDetails userDetails) {
+        UserDto userDto = userService.updateUserRole(roleUpdateRequest);
+
         return ResponseEntity.ok(userDto);
     }
 }

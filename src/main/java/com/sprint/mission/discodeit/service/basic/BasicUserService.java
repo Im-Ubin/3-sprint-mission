@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -9,7 +10,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -39,7 +39,6 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
-    private final BinaryContentMapper binaryContentMapper;
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
@@ -91,7 +90,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto find(@NotNull UUID userId) {
         return userRepository.findById(userId)
-            .map(this::toDto)
+            .map(userMapper::toDto)
             .orElseThrow(() -> {
             log.error("사용자 조회 실패 - userId={}", userId);
             return new UserNotFoundException(userId);
@@ -102,7 +101,7 @@ public class BasicUserService implements UserService {
     public List<UserDto> findAll() {
         return userRepository.findAll()
             .stream()
-            .map(this::toDto)
+            .map(userMapper::toDto)
             .toList();
     }
 
@@ -158,8 +157,8 @@ public class BasicUserService implements UserService {
     public void delete(@NotNull UUID userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> {
-            log.error("사용자 조회 실패 - userId={}", userId);
-            return new UserNotFoundException(userId);
+                log.error("사용자 조회 실패 - userId={}", userId);
+                return new UserNotFoundException(userId);
         });
 
         Optional.ofNullable(user.getProfile())
@@ -169,17 +168,20 @@ public class BasicUserService implements UserService {
         userRepository.delete(user);
     }
 
-    private UserDto toDto(User user) {
-        Boolean online = userStatusRepository.findByUserId(user.getId())
-            .map(UserStatus::isOnline)
-            .orElse(null);
+    @Override
+    @Transactional
+    public UserDto updateUserRole(@Valid RoleUpdateRequest roleUpdateRequest) {
+        UUID userId = roleUpdateRequest.userId();
 
-        return new UserDto(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getProfile() != null ? binaryContentMapper.toDto(user.getProfile()) : null,
-            online
-        );
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> {
+                log.error("사용자 조회 실패 - userId={}", userId);
+                return new UserNotFoundException(userId);
+            });
+
+        user.updateRole(roleUpdateRequest.newRole());
+        log.debug("수정된 사용자 Role: {}", user.getRole());
+
+        return userMapper.toDto(user);
     }
 }
