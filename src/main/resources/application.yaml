@@ -69,3 +69,7 @@ info:
   multipart:
     max-file-size: ${spring.servlet.multipart.maxFileSize}
     max-request-size: ${spring.servlet.multipart.maxRequestSize}
+
+admin:
+  email: ${SPRING_ADMIN_EMAIL}
+  password: ${SPRING_ADMIN_PASSWORD}

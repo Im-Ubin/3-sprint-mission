@@ -15,9 +15,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Builder;
 import lombok.Getter;
 
 @Entity
+@Builder
 @Table(name = "users")
 @Getter
 public class User extends BaseUpdatableEntity {
@@ -32,8 +34,9 @@ public class User extends BaseUpdatableEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     @Column(name = "role", nullable = false)
-    private Role role;
+    private Role role = Role.USER;;
 
     @OneToOne(
         fetch = FetchType.LAZY,
