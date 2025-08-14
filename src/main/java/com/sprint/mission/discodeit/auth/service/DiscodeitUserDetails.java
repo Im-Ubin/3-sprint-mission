@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.auth;
+package com.sprint.mission.discodeit.auth.service;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.Collection;
 import java.util.List;
@@ -14,19 +15,22 @@ import org.springframework.security.core.userdetails.UserDetails;
 @RequiredArgsConstructor
 public class DiscodeitUserDetails implements UserDetails {
 
-    private final User user;
     private final UserDto userDto;
     private final String password;
+    private final Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
     public String getUsername() {
         return userDto.username();
     }
+
+    @Override
+    public String getPassword() { return password; }
 
     @Override
     public boolean isAccountNonExpired() {

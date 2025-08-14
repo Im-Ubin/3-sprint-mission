@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.auth;
+package com.sprint.mission.discodeit.auth.service;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.User;
@@ -23,6 +23,6 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
             .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
         UserDto userDto = userMapper.toDto(user);
 
-        return new DiscodeitUserDetails(userDto, user.getPassword());
+        return new DiscodeitUserDetails(userDto, user.getPassword(), user.getRole());
     }
 }
