@@ -15,12 +15,12 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Builder
 @Table(name = "users")
+@NoArgsConstructor
 @Getter
 public class User extends BaseUpdatableEntity {
 
@@ -34,7 +34,6 @@ public class User extends BaseUpdatableEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     @Column(name = "role", nullable = false)
     private Role role = Role.USER;;
 
@@ -77,7 +76,16 @@ public class User extends BaseUpdatableEntity {
         this.profile = profile;
     }
 
-    public User() { }
+    private User(String username, String email, String password, Role role) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
+
+    public static User withAdminRole(String adminName, String adminEmail, String adminPassword) {
+        return new User(adminName, adminEmail, adminPassword, Role.ADMIN);
+    }
 
     public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
         boolean anyValueUpdated = false;

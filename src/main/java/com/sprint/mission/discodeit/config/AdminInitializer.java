@@ -34,11 +34,11 @@ public class AdminInitializer implements CommandLineRunner {
             return;
         }
 
-        User admin = User.builder()
-            .email(adminEmail)
-            .password(passwordEncoder.encode(adminPassword))
-            .role(Role.ADMIN)
-            .build();
+        User admin = User.withAdminRole(
+            "admin",
+            adminEmail,
+            passwordEncoder.encode(adminPassword)
+        );
 
         userRepository.save(admin);
         log.info("Admin 계정 초기화 작업 완료");
