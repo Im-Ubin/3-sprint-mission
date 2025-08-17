@@ -7,18 +7,14 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,10 +24,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 
 @Slf4j
-@Validated
+@Valid
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
@@ -39,7 +34,6 @@ public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final UserStatusRepository userStatusRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
@@ -47,7 +41,7 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional
     public UserDto create(
-        @Valid UserCreateRequest userCreateRequest,
+        UserCreateRequest userCreateRequest,
         Optional<BinaryContentCreateRequest> optionalProfileCreateRequest
     ) {
         String username = userCreateRequest.username();
@@ -80,16 +74,11 @@ public class BasicUserService implements UserService {
         User createdUser = userRepository.save(user);
         log.debug("사용자 entity 생성: {}",  createdUser);
 
-        Instant now = Instant.now();
-        UserStatus userStatus = new UserStatus(createdUser, now);
-        log.info("사용자 읽음 상태 entity 생성: {}", userStatus);
-        userStatusRepository.save(userStatus);
-
         return userMapper.toDto(createdUser);
     }
 
     @Override
-    public UserDto find(@NotNull UUID userId) {
+    public UserDto find(UUID userId) {
         return userRepository.findById(userId)
             .map(userMapper::toDto)
             .orElseThrow(() -> {
@@ -107,10 +96,11 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @PreAuthorize("#userId == principal.userDto.id()")
     @Transactional
     public UserDto update(
-        @NotNull UUID userId,
-        @Valid UserUpdateRequest userUpdateRequest,
+        UUID userId,
+        UserUpdateRequest userUpdateRequest,
         Optional<BinaryContentCreateRequest> optionalProfileCreateRequest
     ) {
         User user = userRepository.findById(userId)
@@ -154,8 +144,9 @@ public class BasicUserService implements UserService {
    }
 
     @Override
+    @PreAuthorize("#userId == principal.userDto.id()")
     @Transactional
-    public void delete(@NotNull UUID userId) {
+    public void delete(UUID userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> {
                 log.error("사용자 조회 실패 - userId={}", userId);
@@ -165,14 +156,13 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(user.getProfile())
             .ifPresent(binaryContentRepository::delete);
 
-        userStatusRepository.deleteByUserId(userId);
         userRepository.delete(user);
     }
 
     @Override
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public UserDto updateUserRole(@Valid RoleUpdateRequest roleUpdateRequest) {
+    public UserDto updateUserRole(RoleUpdateRequest roleUpdateRequest) {
         UUID userId = roleUpdateRequest.userId();
 
         User user = userRepository.findById(userId)

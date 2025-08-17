@@ -17,4 +17,6 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
   Slice<Message> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable);
 
   void deleteAllByChannelId(UUID channelId);
+
+  boolean existsByIdAndAuthor_Id(UUID messageId, UUID authorId);
 }
