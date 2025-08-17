@@ -2,9 +2,9 @@ package com.sprint.mission.discodeit.auth.service;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
-import com.sprint.mission.discodeit.entity.User;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -50,5 +50,22 @@ public class DiscodeitUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    /*  사용자 정보 비교 메서드
+     *
+     *  equals()와 hashCode() 메서드를 재정의하여 사용자 정보 비교 시 사용된다.
+     *  주로 세션 관리 시 사용되며, 세션 관리 시 사용자 정보 비교 시 사용된다.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DiscodeitUserDetails that)) return false;
+        return Objects.equals(userDto.id(), that.userDto.id());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(userDto.id());
     }
 }
