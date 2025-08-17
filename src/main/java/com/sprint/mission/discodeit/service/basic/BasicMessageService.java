@@ -33,6 +33,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -144,7 +145,7 @@ public class BasicMessageService implements MessageService {
     @Override
     @PreAuthorize("@messageRepository.existsByIdAndAuthor_Id(#messageId, principal.userDto.id())")
     @Transactional
-    public MessageDto update(@NotNull UUID messageId, @Valid MessageUpdateRequest request) {
+    public MessageDto update(@NotNull @P("messageId") UUID messageId, @Valid MessageUpdateRequest request) {
         String newContent = request.newContent();
         Message message = messageRepository.findById(messageId)
             .orElseThrow(() -> {
@@ -158,7 +159,7 @@ public class BasicMessageService implements MessageService {
     @Override
     @PreAuthorize("@messageRepository.existsByIdAndAuthor_Id(#messageId, principal.userDto.id())")
     @Transactional
-    public void delete(@NotNull UUID messageId) {
+    public void delete(@NotNull @P("messageId") UUID messageId) {
         Message message = messageRepository.findById(messageId)
             .orElseThrow(() -> {
               log.error("메시지 조회 실패 - messageId={}", messageId);

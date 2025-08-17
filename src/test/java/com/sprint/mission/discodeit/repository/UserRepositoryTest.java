@@ -3,8 +3,6 @@ package com.sprint.mission.discodeit.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,16 +19,12 @@ import org.springframework.test.context.ActiveProfiles;
 public class UserRepositoryTest {
 
     @Autowired private UserRepository userRepository;
-    @Autowired private UserStatusRepository userStatusRepository;
     @Autowired private TestEntityManager em;
 
     @BeforeEach
     void setUp() {
         User user1 = userRepository.save(new User("tom", "tom@test.com", "pw123456", null));
         User user2 = userRepository.save(new User("jane", "jane@test.com", "pw234567", null));
-        userStatusRepository.save(new UserStatus(user1, Instant.now()));
-        userStatusRepository.save(new UserStatus(user2, Instant.now()));
-
         em.flush();
         em.clear();
     }
@@ -66,8 +60,6 @@ public class UserRepositoryTest {
             .hasSize(2)
             .extracting(User::getUsername)
             .containsExactlyInAnyOrder("tom", "jane");
-
-        assertThat(list).allMatch(u -> u.getStatus() != null);
     }
 
     @Test
