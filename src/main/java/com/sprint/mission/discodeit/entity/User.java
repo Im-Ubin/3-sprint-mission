@@ -50,13 +50,6 @@ public class User extends BaseUpdatableEntity {
     )
     private BinaryContent profile;
 
-    @OneToOne(
-        mappedBy = "user",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
-    private UserStatus status;
-
     @OneToMany(
         mappedBy = "user",
         cascade = CascadeType.ALL,
