@@ -35,7 +35,7 @@ public class User extends BaseUpdatableEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private Role role = Role.USER;;
+    private Role role = Role.USER;
 
     @OneToOne(
         fetch = FetchType.LAZY,
