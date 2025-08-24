@@ -30,12 +30,13 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
         origin.computeIfAbsent(userId, k -> new ConcurrentLinkedQueue<>());
         Queue<JwtInformation> queue = origin.get(userId);
-        queue.add(jwtInformation);
 
-        while (queue.size() > maxActiveJwtCount) {
+        while (!queue.isEmpty()) {
             JwtInformation removed = queue.poll();
             log.debug("[InMemoryJwtRegistry] 동시 로그인 초과 → 기존 토큰 제거: userId={}, removedAT={}", userId, removed.accessToken());
         }
+
+        queue.add(jwtInformation);
 
         log.debug("[InMemoryJwtRegistry] 토큰 등록 완료: userId={}, activeCount={}", userId, queue.size());
     }
